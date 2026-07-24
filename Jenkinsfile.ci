@@ -1,0 +1,23 @@
+pipeline {
+  agent any
+  tools { nodejs 'node-lts' }
+  stages {
+    stage('Install') {
+      steps { sh 'npm ci' }
+    }
+    stage('Lint (SCA)') {
+      steps { sh 'npm run lint' }
+    }
+    stage('Test') {
+      steps { sh 'npm test' }
+    }
+    stage('Dry-Run Build') {
+      steps { sh 'npm run build' }
+    }
+  }
+  post {
+    always {
+      sh 'rm -rf dist'
+    }
+  }
+}
