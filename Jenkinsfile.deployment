@@ -1,0 +1,32 @@
+pipeline {
+  agent any
+  parameters {
+    choice(name: 'TARGET_ENV', choices: ['staging', 'uat', 'production'], description: 'Deploy target')
+    string(name: 'PACKAGE_NAME', defaultValue: '', description: 'e.g. app-v1.2.0.zip')
+  }
+  stages {
+    stage('Fetch Package') {
+      steps {
+        copyArtifacts projectName: 'sqe-cd-delivery', filter: "${params.PACKAGE_NAME}", flatten: true
+      }
+    }
+    stage('Unpack') {
+      steps {
+        sh "rm -rf deploy_tmp && mkdir deploy_tmp"
+        sh "unzip ${params.PACKAGE_NAME} -d deploy_tmp"
+      }
+    }
+    stage('Inject Config') {
+      steps {
+        sh "cp configs/config.${params.TARGET_ENV}.js deploy_tmp/config.js"
+      }
+    }
+    stage('Deploy') {
+      steps {
+        sh "mkdir -p /tmp/deployments/${params.TARGET_ENV}"
+        sh "cp -r deploy_tmp/* /tmp/deployments/${params.TARGET_ENV}/"
+        echo "Deployed ${params.PACKAGE_NAME} to ${params.TARGET_ENV}"
+      }
+    }
+  }
+}

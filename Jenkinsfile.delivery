@@ -1,0 +1,34 @@
+pipeline {
+  agent any
+  tools { nodejs 'node-lts' }
+  parameters {
+    choice(name: 'RELEASE_TYPE', choices: ['devSnapshot', 'version'], description: 'Release type')
+    string(name: 'VERSION_STRING', defaultValue: '', description: 'e.g. v1.2.0 (only if RELEASE_TYPE=version)')
+  }
+  stages {
+    stage('Determine Version') {
+      steps {
+        script {
+          if (params.RELEASE_TYPE == 'version') {
+            env.BUILD_TAG_NAME = params.VERSION_STRING
+          } else {
+            env.BUILD_TAG_NAME = "devSnapshot-build${env.BUILD_NUMBER}"
+          }
+        }
+      }
+    }
+    stage('Install & Build') {
+      steps {
+        sh 'npm ci'
+        sh 'npm run build'
+        sh "echo ${env.BUILD_TAG_NAME} > dist/VERSION.txt"
+      }
+    }
+    stage('Package') {
+      steps {
+        sh "cd dist && zip -r ../app-${env.BUILD_TAG_NAME}.zip . && cd .."
+      }
+    }
+    stage('Archive') {
+      steps {
+        archiveArtifacts artifacts: "app-${env.BUILD_TAG_NAME}.zip",
