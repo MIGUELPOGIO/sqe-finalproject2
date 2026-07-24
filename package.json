@@ -1,0 +1,19 @@
+{
+  "name": "sqe-finalproject2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "jest --passWithNoTests",
+    "build": "echo 'compiling app...' && mkdir -p dist && cp -r src/. dist/ 2>/dev/null || true"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "...",
+    "eslint": "...",
+    "globals": "...",
+    "jest": "..."
+  }
+}
